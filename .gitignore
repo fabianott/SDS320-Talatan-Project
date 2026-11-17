@@ -1,1 +1,19 @@
-data/
+# Large data: not tracked, see data/README.md for how to obtain it.
+# The hand labels in data/raw/vectors are the exception: they are the only
+# input that cannot be downloaded again, so they stay in the repository.
+data/raw/raster/
+data/processed/
+data/training/
+
+# Model checkpoints and large predictions: regenerate with the notebooks
+models/
+results/predictions/
+
+# Archived first attempt (Feng labels) and old notebook versions
+_archive_feng/
+
+# System and cache files
+.DS_Store
+__pycache__/
+.ipynb_checkpoints/
+run_all.log
