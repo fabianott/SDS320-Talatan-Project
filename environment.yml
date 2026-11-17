@@ -1,0 +1,45 @@
+# Python environment for the Talatan solar park project (SDS320).
+# Create it with:  conda env create -f environment.yml
+# Activate it with: conda activate sds320-talatan
+#
+# This is a reduced version of the course environment: it holds the packages
+# the six notebooks actually import, nothing else.
+
+name: sds320-talatan
+
+channels:
+  - conda-forge
+  - nodefaults
+
+dependencies:
+  - python=3.12
+
+  # notebooks
+  - jupyterlab
+  - ipykernel
+  - ipywidgets          # year slider in notebook 05
+  - nbconvert           # used by run_all.sh to execute the notebooks
+
+  # deep learning
+  - geoai-py            # tiling, training and inference wrappers
+  - pytorch
+  - torchvision
+
+  # raster and vector handling
+  - rasterio
+  - rioxarray
+  - xarray
+  - geopandas
+  - shapely
+  - pyproj
+  - pyogrio
+
+  # data access (Microsoft Planetary Computer)
+  - pystac-client
+  - odc-stac
+  - planetary-computer
+
+  # scientific python
+  - numpy
+  - pandas
+  - matplotlib
