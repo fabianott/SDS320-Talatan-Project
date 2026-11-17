@@ -1,0 +1,2 @@
+,IoU,F1,precision,recall,predicted_km2,labelled_km2
+2026-10-06,0.852,0.92,0.92,0.92,341.16,340.908
