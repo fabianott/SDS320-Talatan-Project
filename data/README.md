@@ -13,10 +13,10 @@ Everything else in `data/` is derived from these two by the notebooks.
 | **Dataset name** | Sentinel-2 Level-2A (collection `sentinel-2-l2a`), bands B02 (blue), B03 (green), B04 (red), B08 (near infrared) |
 | **Provider** | European Space Agency / Copernicus, hosted by the Microsoft Planetary Computer |
 | **URL or access route** | STAC API at `https://planetarycomputer.microsoft.com/api/stac/v1`, queried in `notebooks/01_data_search.ipynb` with `pystac-client` and loaded with `odc-stac`. Asset URLs are signed anonymously with `planetary_computer.sign`; no account or token is needed. |
-| **Download date** | 15 and 16 November 2026 |
+| **Download date** | 15 and 16 November 2026; the replacement scenes of 2016, 2022, 2025 and 2026 on 23 November 2026 |
 | **Spatial coverage** | Bounding box 100.132 to 100.665 E, 35.87 to 36.23 N (WGS 84), about 48 by 40 km. Talatan solar park, Gonghe County, Hainan Tibetan Autonomous Prefecture, Qinghai, China |
-| **Temporal coverage** | Seven scenes in 2020 (11 March, 15 April, 29 June, 20 August, 7 October, 13 November, 23 December) and one scene per year from 2016 to 2019 and 2021 to 2026 (15 October 2016, 10 September 2017, 28 October 2018, 23 October 2019, 7 September 2021, 17 October 2022, 19 October 2023, 13 October 2024, 18 October 2025, 6 October 2026) |
-| **Format** | GeoTIFF, four bands, `uint16`, 10 m ground sampling distance, about 115 MB per scene, 17 scenes, roughly 2 GB in total |
+| **Temporal coverage** | Seven scenes in 2020 (11 March, 15 April, 29 June, 20 August, 7 October, 13 November, 23 December) and one scene per year from 2016 to 2019 and 2021 to 2026 (18 October 2016, 10 September 2017, 28 October 2018, 23 October 2019, 7 September 2021, 29 September 2022, 19 October 2023, 13 October 2024, 13 October 2025, 3 October 2026), plus the independent test scene of 6 October 2026 |
+| **Format** | GeoTIFF, four bands, `uint16`, 10 m ground sampling distance, about 115 MB per scene, 18 scenes, roughly 2 GB in total |
 | **Coordinate reference system** | EPSG:32647 (WGS 84 / UTM zone 47N), the native CRS of the Sentinel-2 tile |
 | **Licence** | Free, full and open under the Copernicus data policy. Reuse requires the note "Contains modified Copernicus Sentinel data 2016 to 2026". |
 | **Processing notes** | See section 4 below. |
@@ -31,7 +31,12 @@ below 0.5 % affected pixels over the park and 5 % over the whole box.
 
 The yearly scenes from 2016 to 2026 all come from the window 15 August to 31 October,
 so that sun angle and vegetation state stay close to the training data and the
-annual areas remain comparable. A scene from January 2026 was discarded during
+annual areas remain comparable. Within that window the clearest day is picked
+automatically, with four exceptions chosen by hand: 18 October 2016, because the
+park is clearer than on the automatic pick (15 October), and 29 September 2022,
+13 October 2025 and 3 October 2026, because on the automatic picks (17 October 2022,
+18 October 2025, 6 October 2026) the model maps less PV area than in the year
+before. The independent test scene of 2026 stays 6 October, the date of the hand labels. A scene from January 2026 was discarded during
 the project: frost and a low sun made the modules brighter than anything in the
 training data.
 

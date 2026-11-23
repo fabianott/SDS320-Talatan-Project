@@ -19,7 +19,7 @@ Details on coverage, CRS, licences and processing are in [`data/README.md`](data
 
 ## Methods
 
-1. Scene selection with cloud and snow screening over the park (Scene Classification Layer).
+1. Scene selection with cloud and snow screening over the park (Scene Classification Layer) for the training scenes; for the yearly scenes the clearest day per season, with four days replaced by hand.
 2. Offset correction for processing baseline 04.00 and scaling of the reflectance to 8 bit.
 3. Tiling into 384 × 384 px tiles and training of a U-Net with a ResNet34 encoder (`geoai`).
 4. Prediction on the 2026 test scene and evaluation with IoU, F1, precision and recall.
@@ -78,19 +78,19 @@ Then run the notebooks 01 to 06 in order, or all at once with `./run_all.sh`. No
 
 | Year | Scene | PV area (km²) |
 | --- | --- | --- |
-| 2016 | 2016-10-15 | 59.5 |
+| 2016 | 2016-10-18 | 66.0 |
 | 2017 | 2017-09-10 | 72.3 |
 | 2018 | 2018-10-28 | 92.3 |
 | 2019 | 2019-10-23 | 99.2 |
 | 2020 | 2020-08-20 | 133.1 |
 | 2021 | 2021-09-07 | 168.0 |
-| 2022 | 2022-10-17 | 165.5 |
+| 2022 | 2022-09-29 | 173.3 |
 | 2023 | 2023-10-19 | 249.5 |
 | 2024 | 2024-10-13 | 300.4 |
-| 2025 | 2025-10-18 | 349.8 |
-| 2026 | 2026-10-06 | 341.2 |
+| 2025 | 2025-10-13 | 340.9 |
+| 2026 | 2026-10-03 | 346.0 |
 
-The PV area grew almost sixfold, from about 60 km² in 2016 to about 341 km² in 2026. Growth paused in 2021/22 and was strongest in 2023. The small decreases in 2022 and 2026 lie within the model's uncertainty.
+The PV area grew more than fivefold, from about 66 km² in 2016 to about 346 km² in 2026. Growth almost paused in 2021/22 and was strongest in 2023. For 2016, 2022, 2025 and 2026 the automatically chosen scene was replaced by another date of the same season (see `data/README.md`): on the automatic picks the park was less clear or the model mapped less area than in the year before, which a growing park cannot have.
 
 ## Limitations
 
