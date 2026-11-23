@@ -4,7 +4,7 @@ Semester project for SDS320 (Spatial Data Science), University of Zurich. Author
 
 ## Short summary
 
-The Talatan solar park in Qinghai, China, is one of the largest photovoltaic (PV) installations in the world. This project maps it from Sentinel-2 imagery with semantic segmentation. A U-Net trained on seven hand-labelled scenes from 2020 is applied unchanged to one scene per year from 2016 to 2026. On an independent, hand-labelled scene from 2026 it reaches an IoU of 0.85. A simple spectral index serves as a baseline.
+The Talatan solar park in Qinghai, China, is one of the largest photovoltaic (PV) installations in the world. This project maps it from Sentinel-2 imagery with semantic segmentation. A U-Net trained on seven hand-labelled scenes from 2020 is applied unchanged to one scene per year from 2016 to 2026. On a hand-labelled test scene from 2026 it reaches an IoU of 0.85 overall and 0.79 on the plants built after 2020, which the model never saw. A simple spectral index serves as a baseline (IoU 0.36).
 
 ## Research question
 
@@ -22,7 +22,7 @@ Details on coverage, CRS, licences and processing are in [`data/README.md`](data
 1. Scene selection with cloud and snow screening over the park (Scene Classification Layer) for the training scenes; for the yearly scenes the clearest day per season, with four days replaced by hand.
 2. Offset correction for processing baseline 04.00 and scaling of the reflectance to 8 bit.
 3. Tiling into 384 × 384 px tiles and training of a U-Net with a ResNet34 encoder (`geoai`).
-4. Prediction on the 2026 test scene and evaluation with IoU, F1, precision and recall.
+4. Prediction on the 2026 test scene and evaluation with IoU, F1, precision and recall, for the whole scene and separately for plants built before and after 2020.
 5. Prediction on one scene per year from 2016 to 2026 and calculation of the PV area.
 6. Comparison with a threshold-based spectral index (blue / NIR).
 
@@ -74,6 +74,16 @@ Then run the notebooks 01 to 06 in order, or all at once with `./run_all.sh`. No
 | Mapped area | 341.2 km² | 320.3 km² |
 | Labelled area | 340.9 km² | 340.9 km² |
 
+The test scene is independent in time but not fully in space: 42 % of its labelled PV area lies on plants that already existed in 2020 and were seen during training.
+
+| Part of the test scene | Share of labelled area | IoU | F1 |
+| --- | --- | --- | --- |
+| Plants built by 2020 (seen in training) | 42 % | 0.95 | 0.98 |
+| Plants built after 2020 (unseen) | 58 % | 0.79 | 0.88 |
+| Whole scene | 100 % | 0.85 | 0.92 |
+
+The test uses the scene of 2026-10-06, the date of the hand labels. The time series uses 2026-10-03 for 2026, hence the slightly different area (346.0 km²).
+
 **PV area per year**
 
 | Year | Scene | PV area (km²) |
@@ -96,7 +106,9 @@ The PV area grew more than fivefold, from about 66 km² in 2016 to about 346 km�
 
 - The model was trained on one park and one year only; transfer to other regions is untested.
 - Year-to-year differences of a few km² are not meaningful; only the overall trend is.
-- Training and validation tiles come from the same locations on different dates, so the validation IoU (0.96) is optimistic. The independent 2026 test scene (0.85) is the reliable measure.
+- Training and validation tiles come from the same locations on different dates, so the validation IoU (0.96) is optimistic. On the 2026 test scene the model reaches 0.95 on plants seen in training but 0.79 on plants built after 2020; the second value is the realistic measure for new installations.
+- The areas after 2020 rest mostly on plants the model never saw and are therefore less certain than the earlier years.
+- For 2016, 2022, 2025 and 2026 the scene was chosen by hand after looking at the result, which favours larger areas in those years.
 - The hand labels were drawn on the same 10 m imagery and are themselves uncertain at block edges.
 
 ## AI use
