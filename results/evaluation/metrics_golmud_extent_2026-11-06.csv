@@ -1,0 +1,3 @@
+area,IoU,F1,precision,recall,predicted_km2,labelled_km2
+small (margin 1.5 km),0.898,0.946,0.909,0.987,70.201,64.707
+large (margin 10 km),0.866,0.928,0.875,0.989,73.204,64.707

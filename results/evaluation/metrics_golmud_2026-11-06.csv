@@ -1,0 +1,2 @@
+,IoU,F1,precision,recall,predicted_km2,labelled_km2
+golmud 2026-11-06,0.898,0.946,0.909,0.987,70.201,64.707

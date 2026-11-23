@@ -40,6 +40,12 @@ before. The independent test scene of 2026 stays 6 October, the date of the hand
 the project: frost and a low sun made the modules brighter than anything in the
 training data.
 
+**Golmud transfer test.** For the transfer test in notebook 06, the scene of
+6 November 2026 is loaded for the Golmud solar park, with the same bands and
+resolution but in EPSG:32646 (UTM zone 46N), the native zone there. Two extents are
+used: the hand labels plus 1.5 km (95.074 to 95.292 E, 36.309 to 36.438 N) and the
+labels plus 10 km, computed in the notebook.
+
 ---
 
 ## 2. Hand labels of the photovoltaic area
@@ -63,6 +69,10 @@ backwards from December, construction that was finished between two dates is
 captured, but minor changes of a few modules may have been missed. They are
 accurate enough for training, and for that reason the 2026 labels, drawn from
 scratch, are used for every accuracy figure reported.
+
+The Golmud labels (`golmud_labels_2026-11-06.shp`, EPSG:32646) were digitised
+in the same way and with the same rule on the Golmud scene of 6 November 2026.
+They are used only to evaluate the transfer test, never for training.
 
 ---
 

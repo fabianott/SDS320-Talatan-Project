@@ -1,3 +1,0 @@
-method,IoU,F1,precision,recall,predicted_km2,labelled_km2
-index (blue_over_nir),0.356,0.525,0.542,0.509,320.264,340.908
-U-Net,0.852,0.92,0.92,0.92,341.16,340.908

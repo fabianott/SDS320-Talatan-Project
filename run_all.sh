@@ -27,7 +27,7 @@ NOTEBOOKS=(
   notebooks/03_train_model.ipynb
   notebooks/04_predict_and_evaluate.ipynb
   notebooks/05_time_series.ipynb
-  notebooks/06_index_baseline.ipynb
+  notebooks/06_golmud_transfer.ipynb
 )
 
 log() { echo "$*" | tee -a "$LOG"; }

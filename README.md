@@ -4,7 +4,7 @@ Semester project for SDS320 (Spatial Data Science), University of Zurich. Author
 
 ## Short summary
 
-The Talatan solar park in Qinghai, China, is one of the largest photovoltaic (PV) installations in the world. This project maps it from Sentinel-2 imagery with semantic segmentation. A U-Net trained on seven hand-labelled scenes from 2020 is applied unchanged to one scene per year from 2016 to 2026. On a hand-labelled test scene from 2026 it reaches an IoU of 0.85 overall and 0.79 on the plants built after 2020, which the model never saw. A simple spectral index serves as a baseline (IoU 0.36).
+The Talatan solar park in Qinghai, China, is one of the largest photovoltaic (PV) installations in the world. This project maps it from Sentinel-2 imagery with semantic segmentation. A U-Net trained on seven hand-labelled scenes from 2020 is applied unchanged to one scene per year from 2016 to 2026. On a hand-labelled test scene from 2026 it reaches an IoU of 0.85 overall and 0.79 on the plants built after 2020, which the model never saw. Applied unchanged to a second park, Golmud (Qinghai), it reaches an IoU of 0.90.
 
 ## Research question
 
@@ -13,7 +13,7 @@ How much did the PV area of the Talatan solar park grow between 2016 and 2026, a
 ## Data sources
 
 - **Sentinel-2 Level-2A**, bands B02, B03, B04, B08 at 10 m, from the Microsoft Planetary Computer (STAC API). Not stored in the repository; notebook 01 downloads it.
-- **Hand labels** of the PV area, digitised in QGIS: seven dates in 2020 for training, one date in 2026 for testing. Stored in `data/raw/vectors/`.
+- **Hand labels** of the PV area, digitised in QGIS: seven dates in 2020 for training, one date in 2026 for testing, and one date in 2026 for the Golmud solar park (transfer test). Stored in `data/raw/vectors/`.
 
 Details on coverage, CRS, licences and processing are in [`data/README.md`](data/README.md).
 
@@ -24,7 +24,7 @@ Details on coverage, CRS, licences and processing are in [`data/README.md`](data
 3. Tiling into 384 × 384 px tiles and training of a U-Net with a ResNet34 encoder (`geoai`).
 4. Prediction on the 2026 test scene and evaluation with IoU, F1, precision and recall, for the whole scene and separately for plants built before and after 2020.
 5. Prediction on one scene per year from 2016 to 2026 and calculation of the PV area.
-6. Comparison with a threshold-based spectral index (blue / NIR).
+6. Transfer test: the unchanged model applied to the Golmud solar park and evaluated against hand labels.
 
 ## Repository structure
 
@@ -41,7 +41,7 @@ Details on coverage, CRS, licences and processing are in [`data/README.md`](data
 │   ├── 03_train_model.ipynb          U-Net training
 │   ├── 04_predict_and_evaluate.ipynb prediction and evaluation 2026
 │   ├── 05_time_series.ipynb          time series 2016 to 2026
-│   └── 06_index_baseline.ipynb       spectral index baseline
+│   └── 06_golmud_transfer.ipynb      transfer test on the Golmud solar park
 ├── scripts/
 │   ├── scene_search.py           STAC search and download
 │   ├── preprocessing.py          scaling to 8 bit
@@ -61,18 +61,18 @@ conda env create -f environment.yml
 conda activate sds320-talatan
 ```
 
-Then run the notebooks 01 to 06 in order, or all at once with `./run_all.sh`. Notebook 04 must run before 06. Training in notebook 03 takes about one hour on a laptop CPU.
+Then run the notebooks 01 to 06 in order, or all at once with `./run_all.sh`. Notebook 04 must run before 06, which compares its result with the Talatan metrics. Training in notebook 03 takes about one hour on a laptop CPU.
 
 ## Results
 
 **Accuracy on the independent 2026 test scene**
 
-| | U-Net | Index baseline |
-| --- | --- | --- |
-| IoU | 0.85 | 0.36 |
-| F1 | 0.92 | 0.53 |
-| Mapped area | 341.2 km² | 320.3 km² |
-| Labelled area | 340.9 km² | 340.9 km² |
+| | U-Net |
+| --- | --- |
+| IoU | 0.85 |
+| F1 | 0.92 |
+| Mapped area | 341.2 km² |
+| Labelled area | 340.9 km² |
 
 The test scene is independent in time but not fully in space: 42 % of its labelled PV area lies on plants that already existed in 2020 and were seen during training.
 
@@ -83,6 +83,17 @@ The test scene is independent in time but not fully in space: 42 % of its labell
 | Whole scene | 100 % | 0.85 | 0.92 |
 
 The test uses the scene of 2026-10-06, the date of the hand labels. The time series uses 2026-10-03 for 2026, hence the slightly different area (346.0 km²).
+
+**Transfer test: Golmud solar park, 2026-11-06**
+
+The model trained on Talatan was applied without retraining to the Golmud solar park, about 450 km west of Talatan, and compared with hand labels of the same scene.
+
+| Study area | IoU | F1 | Precision | Recall | Mapped / labelled area |
+| --- | --- | --- | --- | --- | --- |
+| Labels plus 1.5 km margin | 0.90 | 0.95 | 0.91 | 0.99 | 70.2 / 64.7 km² |
+| Labels plus 10 km margin | 0.87 | 0.93 | 0.88 | 0.99 | 73.2 / 64.7 km² |
+
+Almost all labelled PV is found; the errors are false positives, which grow with a larger surrounding area.
 
 **PV area per year**
 
@@ -104,7 +115,7 @@ The PV area grew more than fivefold, from about 66 km² in 2016 to about 346 km�
 
 ## Limitations
 
-- The model was trained on one park and one year only; transfer to other regions is untested.
+- The model was trained on one park and one year only. Transfer was tested on one other park (Golmud), on one date and in a similar setting on the Tibetan Plateau; other regions are untested.
 - Year-to-year differences of a few km² are not meaningful; only the overall trend is.
 - Training and validation tiles come from the same locations on different dates, so the validation IoU (0.96) is optimistic. On the 2026 test scene the model reaches 0.95 on plants seen in training but 0.79 on plants built after 2020; the second value is the realistic measure for new installations.
 - The areas after 2020 rest mostly on plants the model never saw and are therefore less certain than the earlier years.
