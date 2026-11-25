@@ -20,7 +20,7 @@ LOG="run_all.log"
 : > "$LOG"
 
 # Order matters: 02 needs the scenes from 01, 03 needs the tiles from 02,
-# and 06 reads the metrics CSV that 04 writes.
+# 06 reads the metrics CSV that 04 writes, and 05 to 07 need the model from 03.
 NOTEBOOKS=(
   notebooks/01_data_search.ipynb
   notebooks/02_labels_and_tiles.ipynb
@@ -28,6 +28,7 @@ NOTEBOOKS=(
   notebooks/04_predict_and_evaluate.ipynb
   notebooks/05_time_series.ipynb
   notebooks/06_golmud_transfer.ipynb
+  notebooks/07_transfer_sites.ipynb
 )
 
 log() { echo "$*" | tee -a "$LOG"; }
@@ -52,4 +53,4 @@ for nb in "${NOTEBOOKS[@]}"; do
 done
 
 log ""
-log "All six notebooks finished: $(date '+%Y-%m-%d %H:%M')"
+log "All seven notebooks finished: $(date '+%Y-%m-%d %H:%M')"

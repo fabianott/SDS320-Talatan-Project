@@ -10,13 +10,13 @@ Everything else in `data/` is derived from these two by the notebooks.
 
 | Field | Value |
 | --- | --- |
-| **Dataset name** | Sentinel-2 Level-2A (collection `sentinel-2-l2a`), bands B02 (blue), B03 (green), B04 (red), B08 (near infrared) |
+| **Dataset name** | Sentinel-2 Level-2A (collection `sentinel-2-l2a`), bands B02 (blue), B03 (green), B04 (red), B08 (near infrared) at 10 m and B11, B12 (shortwave infrared) at 20 m |
 | **Provider** | European Space Agency / Copernicus, hosted by the Microsoft Planetary Computer |
 | **URL or access route** | STAC API at `https://planetarycomputer.microsoft.com/api/stac/v1`, queried in `notebooks/01_data_search.ipynb` with `pystac-client` and loaded with `odc-stac`. Asset URLs are signed anonymously with `planetary_computer.sign`; no account or token is needed. |
-| **Download date** | 15 and 16 November 2026; the replacement scenes of 2016, 2022, 2025 and 2026 on 23 November 2026 |
+| **Download date** | 24 November 2026 (all scenes downloaded again with six bands) |
 | **Spatial coverage** | Bounding box 100.132 to 100.665 E, 35.87 to 36.23 N (WGS 84), about 48 by 40 km. Talatan solar park, Gonghe County, Hainan Tibetan Autonomous Prefecture, Qinghai, China |
 | **Temporal coverage** | Seven scenes in 2020 (11 March, 15 April, 29 June, 20 August, 7 October, 13 November, 23 December) and one scene per year from 2016 to 2019 and 2021 to 2026 (18 October 2016, 10 September 2017, 28 October 2018, 23 October 2019, 7 September 2021, 29 September 2022, 19 October 2023, 13 October 2024, 13 October 2025, 3 October 2026), plus the independent test scene of 6 October 2026 |
-| **Format** | GeoTIFF, four bands, `uint16`, 10 m ground sampling distance, about 115 MB per scene, 18 scenes, roughly 2 GB in total |
+| **Format** | GeoTIFF, six bands, `uint16`, 10 m ground sampling distance, about 170 MB per Talatan scene, 18 Talatan scenes, roughly 3 GB in total, plus the scenes of the other parks |
 | **Coordinate reference system** | EPSG:32647 (WGS 84 / UTM zone 47N), the native CRS of the Sentinel-2 tile |
 | **Licence** | Free, full and open under the Copernicus data policy. Reuse requires the note "Contains modified Copernicus Sentinel data 2016 to 2026". |
 | **Processing notes** | See section 4 below. |
@@ -36,7 +36,7 @@ automatically, with four exceptions chosen by hand: 18 October 2016, because the
 park is clearer than on the automatic pick (15 October), and 29 September 2022,
 13 October 2025 and 3 October 2026, because on the automatic picks (17 October 2022,
 18 October 2025, 6 October 2026) the model maps less PV area than in the year
-before. The independent test scene of 2026 stays 6 October, the date of the hand labels. A scene from January 2026 was discarded during
+before (with the earlier four-band model; the dates were kept for the six-band model). The independent test scene of 2026 stays 6 October, the date of the hand labels. A scene from January 2026 was discarded during
 the project: frost and a low sun made the modules brighter than anything in the
 training data.
 
@@ -45,6 +45,13 @@ training data.
 resolution but in EPSG:32646 (UTM zone 46N), the native zone there. Two extents are
 used: the hand labels plus 1.5 km (95.074 to 95.292 E, 36.309 to 36.438 N) and the
 labels plus 10 km, computed in the notebook.
+
+**Further parks.** Notebook 07 loads one scene each for Khavda, India (2026-10-04,
+69.25 to 69.65 E, 23.95 to 24.22 N, UTM 42N), the Energiepark Witznitz, Germany
+(2026-08-15, 12.37 to 12.47 E, 51.14 to 51.20 N, UTM 33N), Francisco Pizarro, Spain
+(2026-10-14, 5.750 to 5.625 W, 39.505 to 39.612 N, UTM 30N) and Núñez de Balboa,
+Spain (2026-10-27, 6.272 to 6.180 W, 38.417 to 38.489 N, UTM 29N), each in its
+native UTM zone. There are no hand labels for these parks.
 
 ---
 
@@ -81,27 +88,31 @@ They are used only to evaluate the transfer test, never for training.
 | Folder | Content | Produced by |
 | --- | --- | --- |
 | `data/processed/labels/` | the same labels as GeoPackages, with invalid self-intersecting geometries repaired | notebook 02 |
-| `data/processed/scaled/` | the scenes mapped to 8 bit, see section 4 | notebooks 02, 04, 05 |
+| `data/processed/scaled/` | the scenes mapped to 8 bit, see section 4 | notebooks 02, 04 to 07 |
 | `data/training/images/`, `data/training/labels/` | 1,001 image tiles and 1,001 label masks, 384 by 384 pixels | notebook 02 |
 
-Together roughly 1.5 GB. All of it is deleted and rebuilt on each run of
+Together roughly 2.5 GB. All of it is deleted and rebuilt on each run of
 notebook 02, so none of it is in the repository.
 
 ---
 
 ## 4. Processing chain
 
-1. **Download.** The four bands are loaded for the bounding box at 10 m and
-   written as a GeoTIFF per date, in the native UTM projection. No resampling,
-   no mosaicking: single scenes only, so that no artefacts from compositing
-   enter the imagery.
+1. **Download.** The six bands are loaded for the bounding box at 10 m and
+   written as a GeoTIFF per date, in the native UTM projection. The 10 m bands
+   keep their values (nearest neighbour); the 20 m SWIR bands B11 and B12 are
+   resampled bilinearly to the 10 m grid. No mosaicking over time: single
+   scenes only, so that no artefacts from compositing enter the imagery.
 2. **Offset correction.** Level-2A products from processing baseline 04.00
    onwards, that is from January 2022, carry an added offset of 1000
    reflectance units. It is subtracted for every scene from 2022 on, so that
    the same pixel value means the same reflectance across all years.
-3. **Scaling to 8 bit.** `scripts/preprocessing.py` maps reflectance 0 to 4000
-   linearly onto 0 to 255 and clips above it. The cut-off of 4000 lies above
-   the 99th percentile of all scenes, so almost nothing saturates. This step is
+3. **Scaling to 8 bit.** `scripts/preprocessing.py` maps reflectance linearly
+   onto 0 to 255 and clips above an upper limit per band: 4000 for the four
+   10 m bands, which lies above the 99th percentile of all scenes, and 4500
+   and 4000 for B11 and B12, the 99th percentile of the 2020 training scenes
+   rounded up to the next 500 (checked in notebook 02). Bright, dry soil is
+   much brighter in the shortwave infrared, so a single limit would clip it. This step is
    not cosmetic: `geoai` divides input tiles by 255 and clips its brightness
    augmentations to [0, 1], which silently destroys most tiles when the input
    is 16-bit.

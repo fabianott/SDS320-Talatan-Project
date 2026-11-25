@@ -7,7 +7,8 @@ the resolution are defined once and every scene in the project is built the
 same way.
 
 Notebook 01 uses both functions, for the training scenes of 2020 and for the
-prediction scene of 2026; notebook 05 uses them for one scene per year.
+test scene of 2026; notebooks 05 to 07 use them for the yearly scenes and the
+other solar parks.
 """
 
 from collections import defaultdict
@@ -27,7 +28,10 @@ COLLECTION = "sentinel-2-l2a"
 # the park centre so that the whole installation falls inside the box.
 TALATAN_BBOX = [100.132, 35.87, 100.665, 36.23]
 
-BANDS = ["B02", "B03", "B04", "B08"]   # blue, green, red, near infrared
+# Blue, green, red and near infrared at 10 m, and the two shortwave infrared bands
+# at 20 m, which are resampled bilinearly to the 10 m grid
+BANDS = ["B02", "B03", "B04", "B08", "B11", "B12"]
+SWIR_BANDS = ["B11", "B12"]
 CRS = "EPSG:32647"                     # WGS 84 / UTM zone 47N
 RESOLUTION = 10                        # metres per pixel
 
@@ -98,6 +102,7 @@ def download_scene(
     crs=CRS,
     resolution=RESOLUTION,
     overwrite=False,
+    resampling=None,
 ):
     """Write the scenes of one acquisition day to a multiband GeoTIFF.
 
@@ -114,12 +119,18 @@ def download_scene(
         resolution: Target resolution in metres.
         overwrite: If False, an existing file is kept and nothing is
             downloaded, which makes a rerun of the notebook cheap.
+        resampling: Resampling method, one for all bands or a dict per band.
+            By default the 20 m SWIR bands are resampled bilinearly and the
+            10 m bands with nearest neighbour, so that their values are kept.
 
     Returns:
         out_path.
     """
     if out_path.exists() and not overwrite:
         return out_path
+
+    if resampling is None:
+        resampling = {band: "bilinear" if band in SWIR_BANDS else "nearest" for band in bands}
 
     data = (
         odc.stac.load(
@@ -129,6 +140,7 @@ def download_scene(
             crs=crs,
             resolution=resolution,
             groupby="solar_day",
+            resampling=resampling,
         )
         .isel(time=0)
         .compute()
